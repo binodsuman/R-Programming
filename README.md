@@ -21,3 +21,16 @@ We will use Rserve software to connect our Java code to R environment. Rserve is
 	9. You can get both jar from D:\InstalledSoftware\R-3.4.3\library\Rserve\java (In your case check your R installation path)
 	10. Create one Java Class say Demo.java and execute below code. That’s it :)
 
+You can also add these dependency in pom.xml instaed adding two external jar files in your Java project.
+
+		<dependency>
+			<groupId>org.nuiton.thirdparty</groupId>
+			<artifactId>REngine</artifactId>
+			<version>1.8-5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nuiton.thirdparty</groupId>
+			<artifactId>Rserve</artifactId>
+			<version>1.8-5</version>
+		</dependency>
