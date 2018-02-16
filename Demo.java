@@ -20,9 +20,9 @@ public class Demo {
 	
 	public void connectToR(){
 		
-		try{
-			connection = new RConnection();
-			String vector = "c(1,2,3,4)";
+	 try{
+	    connection = new RConnection();
+	    String vector = "c(1,2,3,4)";
             connection.eval("meanVal=mean(" + vector + ")");
             double mean = connection.eval("meanVal").asDouble();
             System.out.println("The mean of given vector is=" + mean);
@@ -42,7 +42,7 @@ public class Demo {
             
              
             
-		}catch (RserveException e) {
+	}catch (RserveException e) {
             e.printStackTrace();
         } catch (REXPMismatchException e) {
             e.printStackTrace();
