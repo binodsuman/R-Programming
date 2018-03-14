@@ -1,0 +1,149 @@
+K-Means Cluster Algorithm
+
+
+K-means algorithm can be summarized as follows:
+	1. Specify the number of clusters (K) to be created (by the analyst)
+	2. Select randomly k objects from the data set as the initial cluster centers or means
+	3. Assigns each observation to their closest centroid, based on the Euclidean distance between the object and the centroid
+	4. For each of the k clusters update the cluster centroid by calculating the new mean values of all the data points in the cluster. The centroid of a Kth cluster is a vector of length p containing the means of all variables for the observations in the kth cluster; p is the number of variables.
+	5. Iteratively minimize the total within sum of square (Eq. 7). That is, iterate steps 3 and 4 until the cluster assignments stop changing or the maximum number of iterations is reached. By default, the R software uses 10 as the default value for the maximum number of iterations.
+
+From <https://uc-r.github.io/kmeans_clustering> 
+
+
+
+ install.packages("tidyverse")
+ library(tidyverse)
+install.packages("cluster")
+library(cluster)
+ install.packages("factoextra")
+library(factoextra)
+
+
+//USArrests, which contains statistics in arrests per 100,000 residents for assault, murder, and rape in each of the 50 US states in 1973. It includes also the percent of the population living in urban areas.
+df <- USArrests 
+df <- na.omit(df) // to remove any missing data
+head(df)
+//As we don’t want the clustering algorithm to depend to an arbitrary variable unit, we start by scaling/standardizing the data using the R function scale:
+df <- scale(df) // scaling to make standard
+head(df)
+//get_dist: for computing a distance matrix between the rows of a data matrix. The default distance computed is the Euclidean;
+distance <- get_dist(df)
+//fviz_dist: for visualizing a distance matrix
+ fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+// more red means more dissimilarities.
+// Computing K-means.
+k2 <- kmeans(df, centers = 2, nstart = 25) // generate 25 initial configurations. With k=2
+> str(k2)
+List of 9
+ $ cluster     : Named int [1:50] 1 1 1 2 1 1 2 2 1 1 ...
+  ..- attr(*, "names")= chr [1:50] "Alabama" "Alaska" "Arizona" "Arkansas" ...
+ $ centers     : num [1:2, 1:4] 1.005 -0.67 1.014 -0.676 0.198 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:2] "1" "2"
+  .. ..$ : chr [1:4] "Murder" "Assault" "UrbanPop" "Rape"
+ $ totss       : num 196
+ $ withinss    : num [1:2] 46.7 56.1
+ $ tot.withinss: num 103
+ $ betweenss   : num 93.1
+ $ size        : int [1:2] 20 30
+ $ iter        : int 1
+ $ ifault      : int 0
+ - attr(*, "class")= chr "kmeans"
+> 
+The output of kmeans is a list with several bits of information. The most important being:
+	• cluster: A vector of integers (from 1:k) indicating the cluster to which each point is allocated.
+	• centers: A matrix of cluster centers.
+	• totss: The total sum of squares.
+	• withinss: Vector of within-cluster sum of squares, one component per cluster.
+	• tot.withinss: Total within-cluster sum of squares, i.e. sum(withinss).
+	• betweenss: The between-cluster sum of squares, i.e. $totss-tot.withinss$.
+	• size: The number of points in each cluster.
+
+From <https://uc-r.github.io/kmeans_clustering> 
+
+
+K2
+fviz_cluster(k2, data = df) // graph
+// With different K values.
+k3 <- kmeans(df, centers = 3, nstart = 25)
+k4 <- kmeans(df, centers = 4, nstart = 25)
+k5 <- kmeans(df, centers = 5, nstart = 25)
+
+
+# plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = df) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = df) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = df) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = df) + ggtitle("k = 5")
+
+library(gridExtra)
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+
+Determining Optimal Clusters
+As you may recall the analyst specifies the number of clusters to use; preferably the analyst would like to use the optimal number of clusters. To aid the analyst, the following explains the three most popular methods for determining the optimal clusters, which includes:
+	1. Elbow method
+	2. Silhouette method
+	3. Gap statistic
+
+Elbow method:
+	1. Compute clustering algorithm (e.g., k-means clustering) for different values of k. For instance, by varying k from 1 to 10 clusters
+	2. For each k, calculate the total within-cluster sum of square (wss). Within is the one of property of str(k2)
+	3. Plot the curve of wss according to the number of clusters k.
+	4. The location of a bend (knee) in the plot is generally considered as an indicator of the appropriate number of clusters.
+
+set.seed(123)
+
+# function to compute total within-cluster sum of square 
+wss <- function(k) {
+  kmeans(df, k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+
+plot(k.values, wss_values,
+       type="b", pch = 19, frame = FALSE, 
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+
+We can achieve all above step easily using
+fviz_nbclust(df, kmeans, method = "wss")
+
+The results suggest that 4 is the optimal number of clusters as it appears to be the bend in the knee.
+With most of these approaches suggesting 4 as the number of optimal clusters, we can perform the final analysis and extract the results using 4 clusters.
+
+set.seed(123)
+final <- kmeans(df, 4, nstart = 25)
+print(final)
+
+We can visualize the results using fviz_cluster:
+
+fviz_cluster(final, data = df)
+
+Let us apply some animation to understand how R gave us the clustered results.
+ library(animation)
+cl <- kmeans.ani(df,4) // It will create animated four different graphs.
+
+It can be seen that the data is divided into 4 clusters. The cluster centers are :
+> cl$centers
+                 Murder    Assault   UrbanPop       Rape
+Arizona       0.7499801  1.1199128  0.9361748  1.2156432
+Michigan      1.3114424  0.9001666 -0.8586592  0.2931524
+Rhode Island -0.9615407 -1.1066010 -0.9301069 -0.9667633
+Colorado     -0.4442784 -0.3549839  0.5600823 -0.2025014
+
+Cluster-4 with ‘Michigan ’ as the cluster center has a huge crime rate with the lower population as well.
+
+> cl3 <- kmeans.ani(df,3)
+> cl3$centers
+              Murder    Assault   UrbanPop       Rape
+Missouri   0.9681443  0.9765436  0.1370530  0.7978278
+Utah      -0.4894375 -0.3826001  0.5758298 -0.2616538
+Wisconsin -0.9615407 -1.1066010 -0.9301069 -0.9667633
+
+Cluster-3 with ‘Missouri ’ as the cluster center has a huge crime rate with the lower population as well.
+
