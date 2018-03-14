@@ -1,0 +1,124 @@
+Decision tree for Classification using C50
+
+** Classification Trees **
+> install.packages("C50")  // Using C50 algorithm.
+> require(C50)
+>
+> str(iris)
+'data.frame':   150 obs. of  5 variables:
+ $ Sepal.Length: num  7.4 5.1 5.4 6.7 5.4 7.7 6 6.1 5 5.2 ...
+ $ Sepal.Width : num  2.8 3.3 3 3.1 3.4 2.6 2.2 2.8 3.4 3.5 ...
+ $ Petal.Length: num  6.1 1.7 4.5 5.6 1.7 6.9 4 4.7 1.6 1.5 ...
+ $ Petal.Width : num  1.9 0.5 1.5 2.4 0.2 2.3 1 1.2 0.4 0.2 ...
+ $ Species     : Factor w/ 3 levels "setosa","versicolor",..: 3 1 2 3 1 3 2 2 1 1 ...
+> 
+So from 1 to 4 are feature and 5th is the target.
+We will creating data model of 100 record and we will keep 50 record for testing.
+Data model require two input. 1. All feature (except target, means from 1 to 4 means except means -5)
+2. Only target means 5th column.
+
+> m3 <- C5.0(iris[1:100,-5],iris[1:100,5])
+
+> m3
+
+Call:
+C5.0.default(x = iris[1:100, -5], y = iris[1:100, 5])
+
+Classification Tree
+Number of samples: 100 
+Number of predictors: 4 
+
+Tree size: 4  (Number of features)
+
+Non-standard options: attempt to group attributes
+
+> summary(m3)
+
+Call:
+C5.0.default(x = iris[1:100, -5], y = iris[1:100, 5])
+
+
+C5.0 [Release 2.07 GPL Edition]         Fri Dec 01 09:38:35 2017
+-------------------------------
+
+Class specified by attribute `outcome'
+
+Read 100 cases (5 attributes) from undefined.data
+
+Decision tree:
+
+Petal.Width <= 0.5: setosa (28)
+Petal.Width > 0.5:
+:...Petal.Width > 1.7: virginica (29)
+    Petal.Width <= 1.7:
+    :...Petal.Length <= 4.9: versicolor (37/1)
+        Petal.Length > 4.9: virginica (6/2)
+
+Evaluation on training data (100 cases):
+
+            Decision Tree   
+          ----------------  
+          Size      Errors  
+
+             4    3( 3.0%)   <<
+
+
+           (a)   (b)   (c)    <-classified as
+          ----  ----  ----
+            28                (a): class setosa
+                  36     2    (b): class versicolor
+                   1    33    (c): class virginica
+
+
+
+
+
+** It says out of 100, there are 3 incorrect result. 97% correct predict model it is. *****
+Size 4 means, depth of decision tree is 4 as we can see above rule set.
+Confusion metrix show 3 are incorrect result.
+**** Below I am checking is this above generated  rule are correct or not **********
+>test <- iris
+> subset(test, Petal.Length  < 1.9)
+Output: all are setosa
+> nrow(subset(test, Petal.Length  < 1.9))
+[1] 48
+
+> test <- iris[1:100,]c
+
+> table((subset(test, Petal.Width <= 0.5))$Species)
+
+    setosa versicolor  virginica 
+        28          0          0 
+//See this 28 is matching of above 28 in summary(m3)
+
+> subset(test, Petal.Length  > 1.9 & Petal.Width == 1.2) // Only for test
+
+
+> table((subset(test, Petal.Width <= 0.5))$Species)
+
+    setosa versicolor  virginica 
+        49          0          0 
+> 
+
+
+
+> p1 <- predict(m3,iris[101:150,])  // Predicting on test from row 101 to 150
+
+> table(iris[101:150,5],p1)
+            p1
+             setosa versicolor virginica
+  setosa         21          1         0
+  versicolor      0         11         1
+  virginica       0          0        16
+> 
+> table(iris[101:150,5],Predict = p1)
+            Predict
+             setosa versicolor virginica
+  setosa         21          1         0
+  versicolor      0         11         1
+  virginica       0          0        16
+> 
+
+Here we can see, two wrong predict.
+
+> plot(m3) // It will create decision tree with above rule showing.
