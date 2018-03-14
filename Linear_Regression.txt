@@ -1,0 +1,50 @@
+rent <- read.csv("rent_size.csv")
+> str(rent)
+> head(rent)
+rent$income
+rent$rent
+ plot(rent ~ size, data = rent)
+cor(rent$rent, rent$size)
+y = b0 + b1x (x is indepent feature and Y is dependent and target)
+Y is rent and x is size
+
+lm linear model
+ lm(rent ~ size)
+ here rent is Y and size is x
+m1 <- lm(rent ~ size, data = rent)
+>m1
+Coefficients:
+(Intercept)         size  
+     0.6095       0.9855 
+
+>summary(m1)
+
+Call:re
+lm(formula = rent ~ size, data = rent)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-8.4130 -1.8406  0.2621  1.8232  7.5293 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   0.6095     0.6498   0.938    0.351      HERE bo is 0.6095
+size          0.9855     0.0111  88.801   <2e-16 *** HERE b1 is 0.9855
+
+
+y = bo + b1 x
+     0.6095 + 0.9855 x
+Use this and make prediction.
+
+abline(m1, col="red", lty=2, lwd=2) it will create line for linear regression. Stright line.
+
+> predict(m1, data.frame("size" = 1000)) Default 95% PI (Prediction Interval)
+       1 
+986.1533 
+> predict(m1, data.frame("size" = 1000), interval="predict")
+       fit      lwr      upr
+1 986.1533 964.4271 1007.879 (Rent of 1000 sq feet rent would be in range 964.42 to 1007.89)
+
+> 
+
+
